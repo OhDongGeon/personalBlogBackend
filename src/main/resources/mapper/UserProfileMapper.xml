@@ -1,0 +1,19 @@
+<!-- UserProfile.xml -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.UserProfileMapper">
+  <select id="getCustomUser" parameterType="map" resultType="com.example.demo.domain.UserProfile">
+    select user_id
+         , biography
+         , profile_pic
+         , last_login_at
+      from userprofile
+    <if test="orderByForm.orderBy != null and !orderByForm.orderBy.isEmpty()">
+  order by
+      <foreach collection="orderByForm.orderBy" index="key" item="value" separator=",">
+           ${key} ${value}
+      </foreach>
+    </if>
+    offset #{offset} rows fetch next #{page} rows only
+  </select>
+</mapper>
