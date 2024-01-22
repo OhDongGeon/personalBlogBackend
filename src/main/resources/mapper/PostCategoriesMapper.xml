@@ -2,6 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.demo.mapper.PostCategoriesMapper">
+    <update id="updateCategoryByPostStatus" parameterType="com.example.demo.domain.PostCategories">
+        update postcategories pc
+           set pc.category_id = #{categoryId}
+         where pc.post_id in (
+            select po.post_id
+              from posts po
+             where po.status = #{postStatusForm.status}
+             )
+    </update>
+
+
+
+
     <delete id="deletePostCategoriesByPost" parameterType="Long">
         DELETE FROM postcategories WHERE post_id = #{postId}
     </delete>

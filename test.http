@@ -59,3 +59,22 @@ Content-Type: application/json
   }
 }
 
+### 1. 특정 게시물의 조회수 증가
+PATCH http://localhost:8080/posts/1/view-count
+Content-Type: application/json
+
+### 2. 특정 카테고리의 모든 게시물 상태 변경
+PATCH http://localhost:8080/categories/1/posts/status
+Content-Type: application/json
+
+{
+  "status" : "public"
+}
+
+### 3. 게시물의 상태에 따른 카테고리 변경
+PATCH http://localhost:8080/posts/status/categories/1
+Content-Type: application/json
+
+{
+  "status" : "public"
+}

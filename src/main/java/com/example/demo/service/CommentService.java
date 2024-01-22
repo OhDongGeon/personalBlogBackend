@@ -14,6 +14,8 @@ public class CommentService {
     @Autowired
     private CommentMapper commentMapper;
 
+
+    // 특정 게시물에 대한 모든 댓글 조회
     public List<CommentDto> getCommentByPost(Long postId) {
 
         List<Comment> commentList = commentMapper.getCommentByPost(postId);
