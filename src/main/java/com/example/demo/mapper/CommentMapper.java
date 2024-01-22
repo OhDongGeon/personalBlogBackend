@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 @Mapper
 public interface CommentMapper {
 
+    // 특정 게시물에 대한 모든 댓글 조회
     List<Comment> getCommentByPost(Long postId);
 
 

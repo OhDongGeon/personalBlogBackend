@@ -2,6 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.demo.mapper.PostMapper">
+    <select id="getPostById" parameterType="Long" resultType="com.example.demo.domain.Post">
+        select * from posts where post_id = #{postId}
+    </select>
+
+    <select id="getAllPosts" resultType="com.example.demo.domain.Post">
+        select * from posts
+    </select>
+
     <select id="getStatusPublicPost" resultType="com.example.demo.domain.Post">
         select title
              , content
@@ -41,13 +49,13 @@
     </select>
 
     <select id="getUserLatestPost" resultType="com.example.demo.domain.Post">
-            select title
-                 , content
-                 , created_at
-              from posts
-             where user_id = #{postId}
-          order by created_at desc
-       fetch first #{limit} rows only
+        select title
+             , content
+             , created_at
+          from posts
+         where user_id = #{postId}
+      order by created_at desc
+   fetch first #{limit} rows only
     </select>
 
     <select id="getCommentCountByPost" resultType="com.example.demo.model.post.dto.PostCommentCountDto">
@@ -62,54 +70,65 @@
     </select>
 
     <select id="getCategoryMostViewPost" resultType="com.example.demo.domain.Post">
-      select po.title
-           , po.view_count
-        from postcategories pc
-  inner join posts          po
-          on po.post_id 		= pc.post_id
-       where pc.category_id = #{categoryId}
-    order by po.view_count desc
- fetch first #{limit} rows only
+        select po.title
+             , po.view_count
+          from postcategories pc
+    inner join posts          po
+            on po.post_id 		= pc.post_id
+         where pc.category_id = #{categoryId}
+      order by po.view_count desc
+   fetch first #{limit} rows only
     </select>
 
-  <select id="getPreMonthPost" resultType="com.example.demo.domain.Post">
-    select title
-         , created_at
-      from posts
-     where created_at >= add_months(sysdate, -#{month})
-  </select>
-
-  <select id="getCustomPost" parameterType="map" resultType="com.example.demo.domain.Post">
-    select post_id
-         , user_id
-         , title
-         , content
-         , status
-         , view_count
-         , created_at
-         , updated_at
-      from posts
-    <if test="orderByForm.orderBy != null and !orderByForm.orderBy.isEmpty()">
-  order by
-      <foreach collection="orderByForm.orderBy" index="key" item="value" separator=",">
-           ${key} ${value}
-      </foreach>
-    </if>
-    offset #{offset} rows fetch next #{page} rows only
-  </select>
-
-
-
-
-
-
-  <select id="getPostById" parameterType="Long" resultType="com.example.demo.domain.Post">
-        SELECT * FROM posts WHERE post_id = #{postId}
+    <select id="getPreMonthPost" resultType="com.example.demo.domain.Post">
+        select title
+             , created_at
+          from posts
+         where created_at >= add_months(sysdate, -#{month})
     </select>
 
-    <select id="getAllPosts" resultType="com.example.demo.domain.Post">
-        SELECT * FROM posts
+    <select id="getCustomPost" parameterType="map" resultType="com.example.demo.domain.Post">
+        select post_id
+             , user_id
+             , title
+             , content
+             , status
+             , view_count
+             , created_at
+             , updated_at
+          from posts
+        <if test="orderByForm.orderBy != null and !orderByForm.orderBy.isEmpty()">
+      order by
+          <foreach collection="orderByForm.orderBy" index="key" item="value" separator=",">
+               ${key} ${value}
+          </foreach>
+        </if>
+        offset #{offset} rows fetch next #{page} rows only
     </select>
+
+    <update id="updateViewCountPost" parameterType="com.example.demo.domain.Post">
+        update posts
+           set view_count = view_count + 1
+             , updated_at = current_date
+         where post_id = #{postId}
+    </update>
+
+    <update id="updatePostStatusOfCategory" parameterType="com.example.demo.domain.Post">
+        update posts
+           set status = #{postStatusForm.status}
+             , updated_at = current_date
+         where post_id in (
+            select post_id
+              from categories       ca
+        inner join postcategories   pc
+                on pc.category_id = ca.category_id
+             where ca.category_id = #{categoryId}
+             )
+    </update>
+
+
+
+
 
     <insert id="createPost" parameterType="com.example.demo.domain.Post">
         INSERT INTO posts (post_id, user_id, title, content, status, view_count) VALUES (#{postId},#{userId},#{title}, #{content}, #{status} , #{viewCount})

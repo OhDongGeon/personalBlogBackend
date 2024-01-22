@@ -5,10 +5,13 @@ import com.example.demo.model.comment.dto.CommentDto;
 import com.example.demo.model.common.form.OrderByForm;
 import com.example.demo.model.post.dto.PostCommentCountDto;
 import com.example.demo.model.post.dto.PostDto;
+import com.example.demo.model.post.dto.PostTitleContentDto;
 import com.example.demo.model.post.dto.PostTitleContentViewDto;
 import com.example.demo.model.post.dto.PostTitleCreateAtDto;
 import com.example.demo.model.post.dto.PostTitleViewDto;
+import com.example.demo.model.post.form.PostStatusForm;
 import com.example.demo.service.CommentService;
+import com.example.demo.service.PostCategoriesService;
 import com.example.demo.service.PostService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,8 +43,23 @@ public class PostsController {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private PostCategoriesService postCategoriesService;
 
-    // 1. 공개된 모든 게시물 조회
+
+    // 게시물 조회 (GET)
+    @GetMapping("/{postId}") //같은 경로를 사용하더라도 http mathod로 오버로딩 가능
+    public ResponseEntity<Post> getPost(@PathVariable(name = "postId") Long postId) {
+        Post post = postsService.getPostById(postId);
+
+        if (post != null) {
+            return new ResponseEntity<>(post, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 공개된 모든 게시물 조회
     @GetMapping("/")
     public ResponseEntity<List<PostTitleContentViewDto>> getStatusPublicPost() {
 
@@ -53,7 +72,7 @@ public class PostsController {
         }
     }
 
-    // 3. 가장 많이 조회된 상위 5개 게시물 조회
+    // 가장 많이 조회된 상위 5개 게시물 조회
     @GetMapping("/most-views/{limit}")
     public ResponseEntity<List<PostTitleViewDto>> getMostViewPost(
         @PathVariable("limit") Long limit) {
@@ -67,7 +86,7 @@ public class PostsController {
         }
     }
 
-    // 6. 특정 게시물에 대한 모든 댓글 조회
+    // 특정 게시물에 대한 모든 댓글 조회
     @GetMapping("/{postId}/comments")
     public ResponseEntity<List<CommentDto>> getCommentByPost(
         @PathVariable("postId") Long postId) {
@@ -81,7 +100,7 @@ public class PostsController {
         }
     }
 
-    // 8. 각 게시물별 댓글 수 조회
+    // 각 게시물별 댓글 수 조회
     @GetMapping("/comments/count")
     public ResponseEntity<List<PostCommentCountDto>> getCommentCountByPost() {
 
@@ -94,7 +113,7 @@ public class PostsController {
         }
     }
 
-    // 10. 특정 기간 동안 작성된 게시물 조회
+    // 특정 기간 동안 작성된 게시물 조회
     @GetMapping("/pre/{month}")
     public ResponseEntity<List<PostTitleCreateAtDto>> getPreMonthPost(
         @PathVariable("month") Long month) {
@@ -108,13 +127,42 @@ public class PostsController {
         }
     }
 
-    // 11. 다수의 게시물 조회
+    // 다수의 게시물 조회
     @PostMapping("/pages")
     public ResponseEntity<List<PostDto>> getCustomPost(
         @RequestBody OrderByForm orderByForm,
         @RequestParam Long offset, @RequestParam Long page) {
 
         List<PostDto> postList = postsService.getCustomPost(orderByForm, offset, page);
+
+        if (postList != null) {
+            return new ResponseEntity<>(postList, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    // 특정 게시물의 조회수 증가
+    @PatchMapping("/{postId}/view-count")
+    public ResponseEntity<PostDto> updateViewCountPost(@PathVariable("postId") Long postId) {
+
+        PostDto postDto = postsService.updateViewCountPost(postId);
+
+        if (postDto != null) {
+            return new ResponseEntity<>(postDto, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 게시물의 상태에 따른 카테고리 변경
+    @PatchMapping("/status/categories/{categoryId}")
+    public ResponseEntity<List<PostTitleContentDto>> updateCategoryByPostStatus(
+        @PathVariable("categoryId") Long categoryId, @RequestBody PostStatusForm postStatusForm) {
+
+        List<PostTitleContentDto> postList =
+            postCategoriesService.updateCategoryByPostStatus(categoryId, postStatusForm);
 
         if (postList != null) {
             return new ResponseEntity<>(postList, HttpStatus.OK);
@@ -135,17 +183,6 @@ public class PostsController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    // 게시물 조회 (GET)
-    @GetMapping("/{postId}") //같은 경로를 사용하더라도 http mathod로 오버로딩 가능
-    public ResponseEntity<Post> getPost(@PathVariable(name = "postId") Long postId) {
-        Post post = postsService.getPostById(postId);
-
-        if (post != null) {
-            return new ResponseEntity<>(post, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
 
     // 게시물 수정 (PUT)
     @PutMapping("/{postId}")
