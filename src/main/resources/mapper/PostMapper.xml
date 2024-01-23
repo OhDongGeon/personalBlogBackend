@@ -10,16 +10,18 @@
         select * from posts
     </select>
 
-    <select id="getStatusPublicPost" resultType="com.example.demo.domain.Post">
-        select title
+    <select id="getStatusPost" resultType="com.example.demo.domain.Post">
+        select post_id
+             , title
              , content
              , view_count
           from posts
-         where status = 'public'
+         where status = #{status}
     </select>
 
     <select id="getUserPost" resultType="com.example.demo.domain.Post">
-        select title
+        select post_id
+             , title
              , created_at
           from posts
          where user_id = #{id}
@@ -33,7 +35,8 @@
     </select>
 
     <select id="getCategoryPost" resultType="com.example.demo.domain.Post">
-        select po.title
+        select po.post_id
+             , po.title
              , po.content
           from postcategories 	pc
     inner join posts 			      po
@@ -84,7 +87,7 @@
         select title
              , created_at
           from posts
-         where created_at >= add_months(sysdate, -#{month})
+         where created_at >= add_months(current_date, -#{month})
     </select>
 
     <select id="getCustomPost" parameterType="map" resultType="com.example.demo.domain.Post">
@@ -106,6 +109,29 @@
         offset #{offset} rows fetch next #{page} rows only
     </select>
 
+    <select id="getPostLowView" resultType="com.example.demo.domain.Post">
+        <![CDATA[
+            select post_id
+                 , title
+                 , content
+                 , view_count
+              from posts
+             where view_count < #{limit}
+            ]]>
+    </select>
+
+    <select id="getBeforeDate" resultType="com.example.demo.domain.Post">
+        <![CDATA[
+            select post_id
+                 , title
+                 , content
+                 , view_count
+              from posts
+             where created_at < #{standardDate}
+        ]]>
+    </select>
+
+
     <update id="updateViewCountPost" parameterType="com.example.demo.domain.Post">
         update posts
            set view_count = view_count + 1
@@ -125,6 +151,16 @@
              where ca.category_id = #{categoryId}
              )
     </update>
+
+
+    <delete id="deletePostList" parameterType="list">
+        delete
+          from posts
+         where post_id in
+        <foreach collection="list" item="postId" separator="," open="(" close=")">
+               #{postId}
+        </foreach>
+    </delete>
 
 
 

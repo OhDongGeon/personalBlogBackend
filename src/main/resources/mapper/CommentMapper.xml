@@ -2,23 +2,71 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.example.demo.mapper.CommentMapper">
-  <select id="getCommentByPost" resultType="com.example.demo.domain.Comment">
-    select comment_id
-         , post_id
-         , user_id
-         , parent_comment_id
-         , comments
-         , created_at
-      from comments
-     where post_id = #{postId}
-  </select>
+    <select id="getCommentByPost" resultType="com.example.demo.domain.Comment">
+        select comment_id
+             , post_id
+             , user_id
+             , parent_comment_id
+             , comments
+             , created_at
+          from comments
+         where post_id = #{postId}
+    </select>
+
+    <select id="getReply" resultType="com.example.demo.domain.Comment">
+        with reply (comment_id, user_id, parent_comment_id) as (
+            select comment_id, user_id, parent_comment_id
+              from comments
+             where comment_id = #{commentId}
+
+             union all
+
+            select co.comment_id, co.user_id, co.parent_comment_id
+              from comments co
+        inner join reply    re
+                on co.parent_comment_id = re.comment_id
+        )
+
+        select comment_id, user_id, parent_comment_id
+          from reply
+    </select>
 
 
+    <delete id="deleteCommentsByPost" parameterType="Long">
+        delete
+          from comments
+         where post_id = #{postid}
+    </delete>
 
+    <delete id="deleteCommentByUser" parameterType="Long">
+        delete
+          from comments
+         where user_id = #{userId}
+    </delete>
 
+    <delete id="deleteCommentByPostList" parameterType="list">
+        delete
+          from comments
+         where post_id in
+         <foreach collection="list" item="postId" separator="," open="(" close=")">
+               #{postId}
+         </foreach>
+    </delete>
 
+    <delete id="deletePreMonthComment" parameterType="Long">
+        <![CDATA[
+            delete
+              from comments
+             where created_at < add_months(current_date, -#{month})
+        ]]>
+    </delete>
 
-	<delete id="deleteCommentsByPost" parameterType="Long">
-        DELETE FROM comments WHERE post_id = #{postId}
-  </delete>
+    <delete id="deleteCommentList" parameterType="list">
+        delete
+          from comments
+         where comment_id in
+        <foreach collection="list" item="commentId" separator="," open="(" close=")">
+            #{commentId}
+        </foreach>
+    </delete>
 </mapper>

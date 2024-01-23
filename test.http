@@ -1,6 +1,10 @@
 ### 1. 공개된 모든 게시물 조회
-GET http://localhost:8080/posts/
+GET http://localhost:8080/posts/status
 Content-Type: application/json
+
+{
+  "status" : "private"
+}
 
 ### 2. 특정 사용자의 게시물 조회
 GET http://localhost:8080/users/1/posts
@@ -39,7 +43,7 @@ GET http://localhost:8080/posts/pre/5
 Content-Type: application/json
 
 ### 11. 다수의 게시물 조회
-POST http://localhost:8080/posts/pages?offset=5&page=3
+GET http://localhost:8080/posts/pages?offset=5&page=3
 Content-Type: application/json
 
 {
@@ -49,7 +53,7 @@ Content-Type: application/json
 }
 
 ### 12. 다수의 사용자 조회
-POST http://localhost:8080/users/info/pages?offset=5&page=3
+GET http://localhost:8080/users/info/pages?offset=5&page=3
 Content-Type: application/json
 
 {
@@ -77,4 +81,57 @@ Content-Type: application/json
 
 {
   "status" : "public"
+}
+
+
+### 1. 특정 사용자 삭제
+DELETE http://localhost:8080/users/1
+Content-Type: application/json
+
+### 2. 특정 카테고리 삭제
+DELETE http://localhost:8080/categories/1
+Content-Type: application/json
+
+### 3. 특정 카테고리에 속한 게시물 삭제
+DELETE http://localhost:8080/categories/1/posts
+Content-Type: application/json
+
+### 4. 게시물 삭제
+DELETE http://localhost:8080/posts/9
+Content-Type: application/json
+
+### 5. 오래된 댓글 삭제
+DELETE http://localhost:8080/comments/pre/12
+Content-Type: application/json
+
+### 6. 특정 상태의 게시물 삭제
+DELETE http://localhost:8080/posts/status
+Content-Type: application/json
+
+{
+  "status" : "private"
+}
+
+### 7. 특정 사용자가 작성한 댓글 삭제
+DELETE http://localhost:8080/comments/15/users/5
+Content-Type: application/json
+
+### 8. 조회수가 낮은 게시물 삭제
+DELETE http://localhost:8080/posts/views/5
+Content-Type: application/json
+
+### 9. 특정 날짜 이전에 작성된 게시물과 그 댓글 삭제
+DELETE http://localhost:8080/posts/before-date
+Content-Type: application/json
+
+{
+  "standardDate" : "2024-01-13"
+}
+
+### 10. 다수의 게시물 삭제
+DELETE http://localhost:8080/posts/many-ids
+Content-Type: application/json
+
+{
+  "standardId": ["1", "2", "3"]
 }
