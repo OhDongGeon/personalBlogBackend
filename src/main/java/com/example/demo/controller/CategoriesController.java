@@ -3,11 +3,13 @@ package com.example.demo.controller;
 import com.example.demo.model.post.dto.PostTitleContentDto;
 import com.example.demo.model.post.dto.PostTitleViewDto;
 import com.example.demo.model.post.form.PostStatusForm;
+import com.example.demo.service.CategoriesService;
 import com.example.demo.service.PostService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/categories")
 public class CategoriesController {
+
+    @Autowired
+    private CategoriesService categoriesService;
 
     @Autowired
     private PostService postsService;
@@ -62,6 +67,33 @@ public class CategoriesController {
 
         if (postList != null) {
             return new ResponseEntity<>(postList, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+
+    // 특정 카테고리 삭제
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<Long> deleteCategory(@PathVariable("categoryId") Long categoryId) {
+
+        Long deleteCheck = categoriesService.deleteCategory(categoryId);
+
+        if (deleteCheck > 0) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 특정 카테고리에 속한 게시물 삭제
+    @DeleteMapping("/{categoryId}/posts")
+    public ResponseEntity<Long> deleteCategoryPost(@PathVariable("categoryId") Long categoryId) {
+
+        Long deleteCheck = postsService.deleteCategoryPost(categoryId);
+
+        if (deleteCheck > 0) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

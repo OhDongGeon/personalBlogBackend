@@ -4,7 +4,9 @@ import com.example.demo.domain.Post;
 import com.example.demo.mapper.CommentMapper;
 import com.example.demo.mapper.PostCategoriesMapper;
 import com.example.demo.mapper.PostMapper;
+import com.example.demo.model.common.form.ManyStandardId;
 import com.example.demo.model.common.form.OrderByForm;
+import com.example.demo.model.common.form.StandardDateForm;
 import com.example.demo.model.post.dto.PostCommentCountDto;
 import com.example.demo.model.post.dto.PostCountByUserDto;
 import com.example.demo.model.post.dto.PostDto;
@@ -35,6 +37,7 @@ public class PostService {
 
     // 게시물 조회
     public Post getPostById(Long postId) {
+
         return postMapper.getPostById(postId);
     }
 
@@ -44,12 +47,13 @@ public class PostService {
     }
 
     // 공개된 모든 게시물 조회
-    public List<PostTitleContentViewDto> getStatusPublicPost() {
+    public List<PostTitleContentViewDto> getStatusPost(PostStatusForm postStatusForm) {
 
-        List<Post> postList = postMapper.getStatusPublicPost();
+        List<Post> postList = postMapper.getStatusPost(postStatusForm);
         return postList.stream().map(PostTitleContentViewDto::from).collect(Collectors.toList());
     }
 
+    // 특정 사용자의 게시물 조회
     public List<PostTitleCreateAtDto> getUserPost(Long userId) {
 
         List<Post> postList = postMapper.getUserPost(userId);
@@ -70,11 +74,13 @@ public class PostService {
         return postList.stream().map(PostTitleContentDto::from).collect(Collectors.toList());
     }
 
+    // 각 사용자별 게시물 수 조회
     public List<PostCountByUserDto> getPostCountByUser() {
 
         return postMapper.getPostCountByUser();
     }
 
+    // 특정 사용자의 최근 게시물 조회
     public List<PostTitleContentCreateAtDto> getUserLatestPost(Long postId, Long limit) {
 
         List<Post> postList = postMapper.getUserLatestPost(postId, limit);
@@ -137,8 +143,97 @@ public class PostService {
     }
 
 
+    // 게시물 삭제
+    @Transactional
+    public Long deletePost(Long postId) {
 
+        commentMapper.deleteCommentsByPost(postId);
+        return postCategoriesMapper.deletePostCategoriesByPost(postId);
+    }
 
+    // 특정 카테고리에 속한 게시물 삭제
+    @Transactional
+    public Long deleteCategoryPost(Long categoryId) {
+
+        List<Post> postList = postMapper.getCategoryPost(categoryId);
+        Long deleteCount = 0L;
+
+        if (!postList.isEmpty()) {
+            List<Long> postIdList = postList.stream().map(Post::getPostId).toList();
+
+            commentMapper.deleteCommentByPostList(postIdList);
+
+            postCategoriesMapper.deletePostCategoriesByPostList(postIdList);
+
+            deleteCount = postMapper.deletePostList(postIdList);
+        }
+        return deleteCount;
+    }
+
+    // 특정 상태의 게시물 삭제
+    @Transactional
+    public Long deletePostStatus(PostStatusForm postStatusForm) {
+
+        List<Post> postList = postMapper.getStatusPost(postStatusForm);
+        Long deleteCount = 0L;
+
+        if (!postList.isEmpty()) {
+            List<Long> postIdList = postList.stream().map(Post::getPostId).toList();
+
+            commentMapper.deleteCommentByPostList(postIdList);
+
+            postCategoriesMapper.deletePostCategoriesByPostList(postIdList);
+
+            deleteCount = postMapper.deletePostList(postIdList);
+        }
+        return deleteCount;
+    }
+
+    // 조회수가 낮은 게시물 삭제
+    public Long deletePostLowView(Long limit) {
+
+        List<Post> postList = postMapper.getPostLowView(limit);
+        Long deleteCount = 0L;
+
+        if (!postList.isEmpty()) {
+            List<Long> postIdList = postList.stream().map(Post::getPostId).toList();
+
+            commentMapper.deleteCommentByPostList(postIdList);
+
+            postCategoriesMapper.deletePostCategoriesByPostList(postIdList);
+
+            deleteCount = postMapper.deletePostList(postIdList);
+        }
+        return deleteCount;
+    }
+
+    // 특정 날짜 이전에 작성된 게시물과 그 댓글 삭제
+    public Long deleteBeforeDate(StandardDateForm standardDateForm) {
+
+        List<Post> postList = postMapper.getBeforeDate(standardDateForm);
+        Long deleteCount = 0L;
+
+        if (!postList.isEmpty()) {
+            List<Long> postIdList = postList.stream().map(Post::getPostId).toList();
+
+            commentMapper.deleteCommentByPostList(postIdList);
+
+            postCategoriesMapper.deletePostCategoriesByPostList(postIdList);
+
+            deleteCount = postMapper.deletePostList(postIdList);
+        }
+        return deleteCount;
+    }
+
+    // 다수의 게시물 삭제
+    public Long deleteManyId(ManyStandardId manyStandardId) {
+
+        commentMapper.deleteCommentByPostList(manyStandardId.getStandardId());
+
+        postCategoriesMapper.deletePostCategoriesByPostList(manyStandardId.getStandardId());
+
+        return postMapper.deletePostList(manyStandardId.getStandardId());
+    }
 
 
     // 게시물 생성 메서드
@@ -150,14 +245,6 @@ public class PostService {
     public int updatePost(Long postId, Post post) {
 
         return postMapper.updatePost(post);
-    }
-
-    // 게시물 삭제 메서드
-    @Transactional // all or not 원칙으로 하나라도 구문이 실패하면 모두 롤백시킵니다.
-    public int deletePost(Long postId) {
-        commentMapper.deleteCommentsByPost(postId);
-        postCategoriesMapper.deletePostCategoriesByPost(postId);
-        return postMapper.deletePost(postId);
     }
 }
 

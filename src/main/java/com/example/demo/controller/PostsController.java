@@ -2,7 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.domain.Post;
 import com.example.demo.model.comment.dto.CommentDto;
+import com.example.demo.model.common.form.ManyStandardId;
 import com.example.demo.model.common.form.OrderByForm;
+import com.example.demo.model.common.form.StandardDateForm;
 import com.example.demo.model.post.dto.PostCommentCountDto;
 import com.example.demo.model.post.dto.PostDto;
 import com.example.demo.model.post.dto.PostTitleContentDto;
@@ -49,7 +51,8 @@ public class PostsController {
 
     // 게시물 조회 (GET)
     @GetMapping("/{postId}") //같은 경로를 사용하더라도 http mathod로 오버로딩 가능
-    public ResponseEntity<Post> getPost(@PathVariable(name = "postId") Long postId) {
+    public ResponseEntity<Post> getPost(@PathVariable("postId") Long postId) {
+
         Post post = postsService.getPostById(postId);
 
         if (post != null) {
@@ -59,11 +62,12 @@ public class PostsController {
         }
     }
 
-    // 공개된 모든 게시물 조회
-    @GetMapping("/")
-    public ResponseEntity<List<PostTitleContentViewDto>> getStatusPublicPost() {
+    // 상태에 따른 게시물 조회
+    @GetMapping("/status")
+    public ResponseEntity<List<PostTitleContentViewDto>> getStatusPost(
+        @RequestBody PostStatusForm postStatusForm) {
 
-        List<PostTitleContentViewDto> postList = postsService.getStatusPublicPost();
+        List<PostTitleContentViewDto> postList = postsService.getStatusPost(postStatusForm);
 
         if (postList != null) {
             return new ResponseEntity<>(postList, HttpStatus.OK);
@@ -128,7 +132,7 @@ public class PostsController {
     }
 
     // 다수의 게시물 조회
-    @PostMapping("/pages")
+    @GetMapping("/pages")
     public ResponseEntity<List<PostDto>> getCustomPost(
         @RequestBody OrderByForm orderByForm,
         @RequestParam Long offset, @RequestParam Long page) {
@@ -172,8 +176,70 @@ public class PostsController {
     }
 
 
+    // 게시물 삭제
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Long> deletePost(@PathVariable("postId") Long postId) {
 
+        Long deleteCheck = postsService.deletePost(postId);
 
+        if (deleteCheck > 0) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 특정 상태의 게시물 삭제
+    @DeleteMapping("/status")
+    public ResponseEntity<Long> deletePostStatus(@RequestBody PostStatusForm postStatusForm) {
+
+        Long deleteCheck = postsService.deletePostStatus(postStatusForm);
+
+        if (deleteCheck > 0) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 조회수가 낮은 게시물 삭제
+    @DeleteMapping("/views/{limit}")
+    public ResponseEntity<Long> deletePostLowView(@PathVariable("limit") Long limit) {
+
+        Long deleteCheck = postsService.deletePostLowView(limit);
+
+        if (deleteCheck > 0) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 특정 날짜 이전에 작성된 게시물과 그 댓글 삭제
+    @DeleteMapping("/before-date")
+    public ResponseEntity<Long> deleteBeforeDate(@RequestBody StandardDateForm standardDateForm) {
+
+        Long deleteCheck = postsService.deleteBeforeDate(standardDateForm);
+
+        if (deleteCheck > 0) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // 다수의 게시물 삭제
+    @DeleteMapping("/many-ids")
+    public ResponseEntity<Long> deleteManyId(@RequestBody ManyStandardId manyStandardId) {
+
+        Long deleteCheck = postsService.deleteManyId(manyStandardId);
+
+        if (deleteCheck > 0) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 
 
     // 게시물 생성 (POST)
@@ -191,17 +257,6 @@ public class PostsController {
         int postUpdateCount = postsService.updatePost(postId, updatedPost);
         if (postUpdateCount <= 0) {
             return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // 게시물 삭제 (DELETE)
-    @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deletePost(@PathVariable(name = "postId") Long postId) {
-        int postDeleteCount = postsService.deletePost(postId);
-        if (postDeleteCount <= 0) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

@@ -13,7 +13,14 @@
     </update>
 
 
-
+    <delete id="deletePostCategoriesByPostList" parameterType="list">
+        delete
+          from postcategories
+         where post_id in
+        <foreach collection="list" item="postId" separator="," open="(" close=")">
+               #{postId}
+        </foreach>
+    </delete>
 
     <delete id="deletePostCategoriesByPost" parameterType="Long">
         DELETE FROM postcategories WHERE post_id = #{postId}

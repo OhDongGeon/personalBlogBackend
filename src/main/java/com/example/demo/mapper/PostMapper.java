@@ -2,6 +2,7 @@ package com.example.demo.mapper;
 
 import com.example.demo.domain.Post;
 import com.example.demo.model.common.form.OrderByForm;
+import com.example.demo.model.common.form.StandardDateForm;
 import com.example.demo.model.post.dto.PostCommentCountDto;
 import com.example.demo.model.post.dto.PostCountByUserDto;
 import com.example.demo.model.post.form.PostStatusForm;
@@ -19,8 +20,9 @@ public interface PostMapper {
     List<Post> getAllPosts();
 
     // 공개된 모든 게시물 조회
-    List<Post> getStatusPublicPost();
+    List<Post> getStatusPost(PostStatusForm postStatusForm);
 
+    // 특정 사용자의 게시물 조회
     List<Post> getUserPost(Long userId);
 
     // 가장 많이 조회된 상위 5개 게시물 조회
@@ -29,8 +31,10 @@ public interface PostMapper {
     // 특정 카테고리에 속하는 게시물 조회
     List<Post> getCategoryPost(Long categoryId);
 
+    // 각 사용자별 게시물 수 조회
     List<PostCountByUserDto> getPostCountByUser();
 
+    // 특정 사용자의 최근 게시물 조회
     List<Post> getUserLatestPost(Long postId, Long limit);
 
     // 각 게시물별 댓글 수 조회
@@ -45,6 +49,13 @@ public interface PostMapper {
     // 다수의 게시물 조회
     List<Post> getCustomPost(OrderByForm orderByForm, Long offset, Long page);
 
+    // 조회수 limit 보다 작은 게시물 조회
+    List<Post> getPostLowView(Long limit);
+
+    // 특정 일자 이전 게시물 조회
+    List<Post> getBeforeDate(StandardDateForm standardDateForm);
+
+
     // 특정 게시물의 조회수 증가
     Long updateViewCountPost(Long postId);
 
@@ -52,7 +63,8 @@ public interface PostMapper {
     Long updatePostStatusOfCategory(Long categoryId, PostStatusForm postStatusForm);
 
 
-
+    // 게시물 삭제
+    Long deletePostList(List<Long> postId);
 
 
     int createPost(Post post);
