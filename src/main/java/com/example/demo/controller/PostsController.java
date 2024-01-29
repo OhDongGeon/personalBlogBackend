@@ -2,9 +2,11 @@ package com.example.demo.controller;
 
 import com.example.demo.domain.Post;
 import com.example.demo.model.comment.dto.CommentDto;
+import com.example.demo.model.common.dto.PostCategoryNameDto;
 import com.example.demo.model.common.form.ManyStandardId;
 import com.example.demo.model.common.form.OrderByForm;
 import com.example.demo.model.common.form.StandardDateForm;
+import com.example.demo.model.post.dto.PostBestListDto;
 import com.example.demo.model.post.dto.PostCommentCountDto;
 import com.example.demo.model.post.dto.PostDto;
 import com.example.demo.model.post.dto.PostTitleContentDto;
@@ -131,13 +133,27 @@ public class PostsController {
         }
     }
 
+    // Best 포스트 조회
+    @GetMapping("/best/{limit}")
+    public ResponseEntity<PostBestListDto> getBestPost(
+        @PathVariable("limit") Long limit) {
+
+        PostBestListDto bestPost = postsService.getBestPost(limit);
+
+        if (bestPost != null) {
+            return new ResponseEntity<>(bestPost, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     // 다수의 게시물 조회
-    @GetMapping("/pages")
-    public ResponseEntity<List<PostDto>> getCustomPost(
+    @PostMapping("/pages")
+    public ResponseEntity<List<PostCategoryNameDto>> getCustomPost(
         @RequestBody OrderByForm orderByForm,
         @RequestParam Long offset, @RequestParam Long page) {
 
-        List<PostDto> postList = postsService.getCustomPost(orderByForm, offset, page);
+        List<PostCategoryNameDto> postList = postsService.getCustomPost(orderByForm, offset, page);
 
         if (postList != null) {
             return new ResponseEntity<>(postList, HttpStatus.OK);
@@ -245,17 +261,19 @@ public class PostsController {
     // 게시물 생성 (POST)
     @PostMapping // http method 설정
     public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        postsService.createPost(post);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+
+        Post createPost = postsService.createPost(post);
+
+        return new ResponseEntity<>(createPost,HttpStatus.CREATED);
     }
 
 
     // 게시물 수정 (PUT)
     @PutMapping("/{postId}")
-    public ResponseEntity<Post> updatePost(@PathVariable(name = "postId") Long postId,
-        @RequestBody Post updatedPost) {
+    public ResponseEntity<Post> updatePost(
+        @PathVariable(name = "postId") Long postId, @RequestBody Post updatedPost) {
         int postUpdateCount = postsService.updatePost(postId, updatedPost);
-        if (postUpdateCount <= 0) {
+        if (postUpdateCount > 0) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

@@ -28,7 +28,7 @@
     </select>
 
     <select id="getMostViewPost" resultType="com.example.demo.domain.Post">
-        select title, view_count
+        select post_id, title, content, view_count, image_url
           from posts
       order by view_count desc
    fetch first #{limit} rows only
@@ -90,16 +90,42 @@
          where created_at >= add_months(current_date, -#{month})
     </select>
 
-    <select id="getCustomPost" parameterType="map" resultType="com.example.demo.domain.Post">
-        select post_id
-             , user_id
-             , title
-             , content
-             , status
-             , view_count
-             , created_at
-             , updated_at
-          from posts
+    <select id="getMostCommentByPost" resultType="com.example.demo.domain.Post">
+        select po.post_id
+             , po.title
+             , co.comment_count
+             , po.view_count
+             , po.content
+             , po.image_url
+          from posts    po
+    inner join (
+            select post_id
+                 , count(comment_id) comment_count
+              from comments
+             where created_at  >= sysdate - 7
+          group by post_id
+                )       co
+            on co.post_id = po.post_id
+      order by comment_count desc
+   fetch first #{limit} rows only
+    </select>
+
+    <select id="getCustomPost" parameterType="map" resultType="com.example.demo.model.common.dto.PostCategoryNameDto">
+        select po.post_id
+             , po.user_id
+             , po.title
+             , po.content
+             , po.status
+             , po.view_count
+             , po.created_at
+             , po.updated_at
+             , po.image_url
+             , ca.name          category_name
+          from posts			      po
+     left join postcategories 	pc
+            on pc.post_id 		  = po.post_id
+     left join categories		    ca
+            on ca.category_id 	= pc.category_id
         <if test="orderByForm.orderBy != null and !orderByForm.orderBy.isEmpty()">
       order by
           <foreach collection="orderByForm.orderBy" index="key" item="value" separator=",">
@@ -162,19 +188,18 @@
         </foreach>
     </delete>
 
+    <delete id="deletePost" parameterType="Long">
+      delete from posts where post_id = #{postid}
+    </delete>
 
 
 
-
-    <insert id="createPost" parameterType="com.example.demo.domain.Post">
-        INSERT INTO posts (post_id, user_id, title, content, status, view_count) VALUES (#{postId},#{userId},#{title}, #{content}, #{status} , #{viewCount})
+    <insert id="createPost" parameterType="com.example.demo.domain.Post" useGeneratedKeys="true" keyProperty="postId" keyColumn="POST_ID">
+        insert into posts (user_id, title, content, status, view_count, created_at) values (#{userId},#{title}, #{content}, #{status} , #{viewCount}, current_date)
     </insert>
 
     <update id="updatePost" parameterType="com.example.demo.domain.Post">
         UPDATE posts SET title = #{title}, content = #{content} WHERE post_id = #{postId}
     </update>
 
-    <delete id="deletePost" parameterType="Long">
-        DELETE FROM posts WHERE post_id = #{postId}
-    </delete>
 </mapper>

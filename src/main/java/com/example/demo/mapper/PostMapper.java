@@ -1,6 +1,7 @@
 package com.example.demo.mapper;
 
 import com.example.demo.domain.Post;
+import com.example.demo.model.common.dto.PostCategoryNameDto;
 import com.example.demo.model.common.form.OrderByForm;
 import com.example.demo.model.common.form.StandardDateForm;
 import com.example.demo.model.post.dto.PostCommentCountDto;
@@ -46,8 +47,11 @@ public interface PostMapper {
     // 특정 기간 동안 작성된 게시물 조회
     List<Post> getPreMonthPost(Long month);
 
+    // 7일간 많은 댓글이 달린 게시물 조회
+    List<Post> getMostCommentByPost(Long limit);
+
     // 다수의 게시물 조회
-    List<Post> getCustomPost(OrderByForm orderByForm, Long offset, Long page);
+    List<PostCategoryNameDto> getCustomPost(OrderByForm orderByForm, Long offset, Long page);
 
     // 조회수 limit 보다 작은 게시물 조회
     List<Post> getPostLowView(Long limit);
@@ -62,14 +66,14 @@ public interface PostMapper {
     // 특정 카테고리의 모든 게시물 상태 변경
     Long updatePostStatusOfCategory(Long categoryId, PostStatusForm postStatusForm);
 
-
     // 게시물 삭제
+    Long deletePost(Long postId);
+
+    // 게시물 삭제 리스트
     Long deletePostList(List<Long> postId);
 
 
-    int createPost(Post post);
+    void createPost(Post post);
 
     int updatePost(Post post);
-
-    int deletePost(Long postId);
 }

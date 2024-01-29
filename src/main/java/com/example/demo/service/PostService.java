@@ -4,9 +4,11 @@ import com.example.demo.domain.Post;
 import com.example.demo.mapper.CommentMapper;
 import com.example.demo.mapper.PostCategoriesMapper;
 import com.example.demo.mapper.PostMapper;
+import com.example.demo.model.common.dto.PostCategoryNameDto;
 import com.example.demo.model.common.form.ManyStandardId;
 import com.example.demo.model.common.form.OrderByForm;
 import com.example.demo.model.common.form.StandardDateForm;
+import com.example.demo.model.post.dto.PostBestListDto;
 import com.example.demo.model.post.dto.PostCommentCountDto;
 import com.example.demo.model.post.dto.PostCountByUserDto;
 import com.example.demo.model.post.dto.PostDto;
@@ -16,7 +18,9 @@ import com.example.demo.model.post.dto.PostTitleContentViewDto;
 import com.example.demo.model.post.dto.PostTitleCreateAtDto;
 import com.example.demo.model.post.dto.PostTitleViewDto;
 import com.example.demo.model.post.form.PostStatusForm;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -108,11 +112,40 @@ public class PostService {
         return postList.stream().map(PostTitleCreateAtDto::from).collect(Collectors.toList());
     }
 
-    // 다수의 게시물 조회
-    public List<PostDto> getCustomPost(OrderByForm orderByForm, Long offset, Long page) {
+    // Best 포스트 조회
+    @Transactional
+    public PostBestListDto getBestPost(Long limit) {
 
-        List<Post> postList = postMapper.getCustomPost(orderByForm, offset, page);
-        return postList.stream().map(PostDto::from).collect(Collectors.toList());
+        // 7일간 많은 댓글이 달린 게시물 조회 (기준 * 2)
+        List<Post> mostCommentPosts = postMapper.getMostCommentByPost(limit * 2);
+        // 가장 많이 조회된 게시물 조회 (기준 * 2)
+        List<Post> mostViewPosts = postMapper.getMostViewPost(limit * 2);
+
+        int intLimit = limit.intValue();
+
+        // 7일간 많은 댓글이 달린 게시물 조회(기준)
+        List<Post> mostCommentPostsLimit = mostCommentPosts.subList(0, intLimit);
+        // 7일간 많은 댓글이 달린 게시물 조회(기준)
+        List<Post> mostViewPostsLimit = mostViewPosts.subList(0, intLimit);
+
+        // 중복없는 베스트 게시물
+        Set<Post> bestPosts = new HashSet<>(mostCommentPostsLimit);
+        for (Post mostViewPost : mostViewPosts) {
+            bestPosts.add(mostViewPost);
+
+            if (bestPosts.size() >= limit * 2) {
+                break;
+            }
+        }
+
+        return PostBestListDto.of(mostCommentPostsLimit, mostViewPostsLimit, bestPosts);
+    }
+
+    // 다수의 게시물 조회
+    public List<PostCategoryNameDto> getCustomPost(OrderByForm orderByForm, Long offset,
+        Long page) {
+
+        return postMapper.getCustomPost(orderByForm, offset, page);
     }
 
 
@@ -148,7 +181,10 @@ public class PostService {
     public Long deletePost(Long postId) {
 
         commentMapper.deleteCommentsByPost(postId);
-        return postCategoriesMapper.deletePostCategoriesByPost(postId);
+
+        postCategoriesMapper.deletePostCategoriesByPost(postId);
+
+        return postMapper.deletePost(postId);
     }
 
     // 특정 카테고리에 속한 게시물 삭제
@@ -237,8 +273,11 @@ public class PostService {
 
 
     // 게시물 생성 메서드
-    public int createPost(Post post) {
-        return postMapper.createPost(post);
+    public Post createPost(Post post) {
+
+        postMapper.createPost(post);
+
+        return post;
     }
 
     // 게시물 수정 메서드
