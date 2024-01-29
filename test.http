@@ -43,7 +43,7 @@ GET http://localhost:8080/posts/pre/5
 Content-Type: application/json
 
 ### 11. 다수의 게시물 조회
-GET http://localhost:8080/posts/pages?offset=5&page=3
+POST http://localhost:8080/posts/pages?offset=0&page=
 Content-Type: application/json
 
 {
@@ -53,7 +53,7 @@ Content-Type: application/json
 }
 
 ### 12. 다수의 사용자 조회
-GET http://localhost:8080/users/info/pages?offset=5&page=3
+POST http://localhost:8080/users/info/pages?offset=5&page=3
 Content-Type: application/json
 
 {
@@ -135,3 +135,8 @@ Content-Type: application/json
 {
   "standardId": ["1", "2", "3"]
 }
+
+
+### Best 포스트 조회
+GET http://localhost:8080/posts/best/2
+Content-Type: application/json

@@ -2,6 +2,7 @@ package com.example.demo.model.post.dto;
 
 import com.example.demo.domain.Post;
 import java.sql.Timestamp;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class PostDto {
     private Long viewCount;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private String imageUrl;
 
     public static PostDto from(Post post) {
         return PostDto.builder()
@@ -30,6 +32,7 @@ public class PostDto {
             .viewCount(post.getViewCount())
             .createdAt(post.getCreatedAt())
             .updatedAt(post.getUpdatedAt())
+            .imageUrl(post.getImageUrl())
             .build();
     }
 }
