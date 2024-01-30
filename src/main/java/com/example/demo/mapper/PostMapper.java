@@ -27,7 +27,7 @@ public interface PostMapper {
     List<Post> getUserPost(Long userId);
 
     // 가장 많이 조회된 상위 5개 게시물 조회
-    List<Post> getMostViewPost(Long limit);
+    List<PostCategoryNameDto> getMostViewPost(Long limit);
 
     // 특정 카테고리에 속하는 게시물 조회
     List<Post> getCategoryPost(Long categoryId);
@@ -48,7 +48,7 @@ public interface PostMapper {
     List<Post> getPreMonthPost(Long month);
 
     // 7일간 많은 댓글이 달린 게시물 조회
-    List<Post> getMostCommentByPost(Long limit);
+    List<PostCategoryNameDto> getMostCommentByPost(Long limit);
 
     // 다수의 게시물 조회
     List<PostCategoryNameDto> getCustomPost(OrderByForm orderByForm, Long offset, Long page);

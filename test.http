@@ -43,7 +43,7 @@ GET http://localhost:8080/posts/pre/5
 Content-Type: application/json
 
 ### 11. 다수의 게시물 조회
-POST http://localhost:8080/posts/pages?offset=0&page=
+POST http://localhost:8080/posts/pages?offset=0&page=20
 Content-Type: application/json
 
 {

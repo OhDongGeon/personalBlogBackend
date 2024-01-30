@@ -18,17 +18,4 @@ public class Post {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private String imageUrl;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Post post = (Post) o;
-        return Objects.equals(postId, post.postId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(postId);
-    }
 }
