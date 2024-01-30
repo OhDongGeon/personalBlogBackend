@@ -27,10 +27,23 @@
          where user_id = #{id}
     </select>
 
-    <select id="getMostViewPost" resultType="com.example.demo.domain.Post">
-        select post_id, title, content, view_count, image_url
-          from posts
-      order by view_count desc
+    <select id="getMostViewPost" resultType="com.example.demo.model.common.dto.PostCategoryNameDto">
+        select po.post_id
+             , po.user_id
+             , po.title
+             , po.content
+             , po.status
+             , po.view_count
+             , po.created_at
+             , po.updated_at
+             , po.image_url
+             , ca.name          category_name
+          from posts    po
+     left join postcategories 	pc
+            on pc.post_id 		  = po.post_id
+     left join categories		    ca
+            on ca.category_id 	= pc.category_id
+      order by po.view_count desc
    fetch first #{limit} rows only
     </select>
 
@@ -90,22 +103,31 @@
          where created_at >= add_months(current_date, -#{month})
     </select>
 
-    <select id="getMostCommentByPost" resultType="com.example.demo.domain.Post">
+    <select id="getMostCommentByPost" resultType="com.example.demo.model.common.dto.PostCategoryNameDto">
         select po.post_id
+             , po.user_id
              , po.title
-             , co.comment_count
-             , po.view_count
              , po.content
+             , po.status
+             , po.view_count
+             , po.created_at
+             , po.updated_at
              , po.image_url
-          from posts    po
+             , ca.name          category_name
+             , co.comment_count
+          from posts            po
     inner join (
             select post_id
                  , count(comment_id) comment_count
               from comments
              where created_at  >= sysdate - 7
           group by post_id
-                )       co
+                )               co
             on co.post_id = po.post_id
+     left join postcategories 	pc
+            on pc.post_id 		  = po.post_id
+     left join categories		    ca
+            on ca.category_id 	= pc.category_id
       order by comment_count desc
    fetch first #{limit} rows only
     </select>

@@ -67,8 +67,14 @@ public class PostService {
     // 가장 많이 조회된 상위 5개 게시물 조회
     public List<PostTitleViewDto> getMostViewPost(Long limit) {
 
-        List<Post> postList = postMapper.getMostViewPost(limit);
-        return postList.stream().map(PostTitleViewDto::from).collect(Collectors.toList());
+        List<PostCategoryNameDto> postList = postMapper.getMostViewPost(limit);
+
+        return postList.stream()
+            .map(post -> {Post postEntity = new Post();
+                postEntity.setTitle(post.getTitle());
+                postEntity.setViewCount(post.getViewCount());
+                return PostTitleViewDto.from(postEntity);
+            }).collect(Collectors.toList());
     }
 
     // 특정 카테고리에 속하는 게시물 조회
@@ -117,20 +123,20 @@ public class PostService {
     public PostBestListDto getBestPost(Long limit) {
 
         // 7일간 많은 댓글이 달린 게시물 조회 (기준 * 2)
-        List<Post> mostCommentPosts = postMapper.getMostCommentByPost(limit * 2);
+        List<PostCategoryNameDto> mostCommentPosts = postMapper.getMostCommentByPost(limit * 2);
         // 가장 많이 조회된 게시물 조회 (기준 * 2)
-        List<Post> mostViewPosts = postMapper.getMostViewPost(limit * 2);
+        List<PostCategoryNameDto> mostViewPosts = postMapper.getMostViewPost(limit * 2);
 
         int intLimit = limit.intValue();
 
         // 7일간 많은 댓글이 달린 게시물 조회(기준)
-        List<Post> mostCommentPostsLimit = mostCommentPosts.subList(0, intLimit);
+        List<PostCategoryNameDto> mostCommentPostsLimit = mostCommentPosts.subList(0, intLimit);
         // 7일간 많은 댓글이 달린 게시물 조회(기준)
-        List<Post> mostViewPostsLimit = mostViewPosts.subList(0, intLimit);
+        List<PostCategoryNameDto> mostViewPostsLimit = mostViewPosts.subList(0, intLimit);
 
-        // 중복없는 베스트 게시물
-        Set<Post> bestPosts = new HashSet<>(mostCommentPostsLimit);
-        for (Post mostViewPost : mostViewPosts) {
+        // 중복 없는 베스트 게시물
+        Set<PostCategoryNameDto> bestPosts = new HashSet<>(mostCommentPostsLimit);
+        for (PostCategoryNameDto mostViewPost : mostViewPosts) {
             bestPosts.add(mostViewPost);
 
             if (bestPosts.size() >= limit * 2) {
